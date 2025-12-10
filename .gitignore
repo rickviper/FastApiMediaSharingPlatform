@@ -7,6 +7,9 @@ wheels/
 *.egg-info
 .env 
 
+# uv cache & build artifacts
+.uv/
+
 # Virtual environments
 .venv
 
