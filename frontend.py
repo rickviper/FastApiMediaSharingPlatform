@@ -3,8 +3,57 @@ import requests
 import base64
 import urllib.parse
 
-st.set_page_config(page_title="Our Social", layout="wide")
+# ---------------- PAGE CONFIG ----------------
+st.set_page_config(
+    page_title="Our Social",
+    layout="wide",
+    initial_sidebar_state="expanded"
+)
 
+# ---------------- GLOBAL CSS (UI ONLY) ----------------
+st.markdown("""
+<style>
+
+/* Buttons */
+.stButton > button {
+    border-radius: 10px;
+    padding: 0.6rem 1.2rem;
+    font-weight: 600;
+}
+
+/* Input fields */
+input, textarea {
+    border-radius: 10px !important;
+}
+
+/* Card style */
+.card {
+    border-radius: 16px;
+    padding: 1.2rem;
+    margin-bottom: 1.5rem;
+}
+
+/* Feed header */
+.feed-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.6rem;
+}
+
+/* Sidebar */
+section[data-testid="stSidebar"] {
+
+}
+
+/* Upload box */
+.upload-box {
+    border-radius: 16px;
+    padding: 2rem;
+    box-shadow: 0 8px 25px rgba(0,0,0,0.05);
+}
+</style>
+""", unsafe_allow_html=True)
 # initialize session state
 if 'token' not in st.session_state:
     st.session_state.token = None
@@ -20,52 +69,59 @@ def get_headers():
 
 
 def login_page():
-    st.title("🚀 Welcome to Our Social")
+    st.markdown("<h1 style='text-align:center;'>🚀 Our Social</h1>", unsafe_allow_html=True)
+    st.markdown("<p style='text-align:center;color:#6b7280;'>Share moments. Watch stories. Stay connected.</p>", unsafe_allow_html=True)
+    st.markdown("<br>", unsafe_allow_html=True)
 
-    # simple form with two buttons
-    email = st.text_input("Email:")
-    password = st.text_input("Password:", type="password")
+    col1, col2, col3 = st.columns([1, 1.2, 1])
+    with col2:
+        st.markdown("<div class='card'>", unsafe_allow_html=True)
 
-    if email and password:
-        col1, col2 = st.columns(2)
+        email = st.text_input("Email")
+        password = st.text_input("Password", type="password")
 
-        with col1:
-            if st.button("Login", type="primary", use_container_width=True):
-                # login using FastAPI Users JWT endpoint
-                login_data = {"username": email, "password": password}
-                response = requests.post("http://localhost:8000/auth/jwt/login", data=login_data)
-
-                if response.status_code == 200:
-                    token_data = response.json()
-                    st.session_state.token = token_data["access_token"]
-
-                    # get user info
-                    user_response = requests.get("http://localhost:8000/users/me", headers=get_headers())
-                    if user_response.status_code == 200:
-                        st.session_state.user = user_response.json()
-                        st.rerun()
+        if email and password:
+            c1, c2 = st.columns(2)
+            with c1:
+                if st.button("Login", type="primary", use_container_width=True):
+                    response = requests.post(
+                        "http://localhost:8000/auth/jwt/login",
+                        data={"username": email, "password": password}
+                    )
+                    if response.status_code == 200:
+                        st.session_state.token = response.json()["access_token"]
+                        user_response = requests.get(
+                            "http://localhost:8000/users/me",
+                            headers=get_headers()
+                        )
+                        if user_response.status_code == 200:
+                            st.session_state.user = user_response.json()
+                            st.rerun()
+                        else:
+                            st.error("Failed to get user info")
                     else:
-                        st.error("Failed to get user info")
-                else:
-                    st.error("Invalid email or password!")
+                        st.error("Invalid email or password")
 
-        with col2:
-            if st.button("Sign Up", type="secondary", use_container_width=True):
-                # registeration using FastAPI Users
-                signup_data = {"email": email, "password": password}
-                response = requests.post("http://localhost:8000/auth/register", json=signup_data)
+            with c2:
+                if st.button("Sign Up", use_container_width=True):
+                    response = requests.post(
+                        "http://localhost:8000/auth/register",
+                        json={"email": email, "password": password}
+                    )
+                    if response.status_code == 201:
+                        st.success("Account created! Please login.")
+                    else:
+                        st.error("Registration failed")
 
-                if response.status_code == 201:
-                    st.success("Account created! Click Login now.")
-                else:
-                    error_detail = response.json().get("detail", "Registration failed")
-                    st.error(f"Registration failed: {error_detail}")
-    else:
-        st.info("Enter your email and password above")
+        else:
+            st.info("Enter your credentials above")
+
+        st.markdown("</div>", unsafe_allow_html=True)
 
 
 def upload_page():
-    st.title("📸 Share Something")
+    st.title("📸 Create a Post")
+    st.markdown("<div class='upload-box'>", unsafe_allow_html=True)
 
     uploaded_file = st.file_uploader("Choose media", type=['png', 'jpg', 'jpeg', 'mp4', 'avi', 'mov', 'mkv', 'webm'])
     caption = st.text_area("Caption:", placeholder="What's on your mind?")
@@ -112,55 +168,55 @@ def create_transformed_url(original_url, transformation_params, caption=None):
 
 
 def feed_page():
-    st.title("🏠 Feed")
+    st.title("🏠 Home Feed")
 
     response = requests.get("http://localhost:8000/feed", headers=get_headers())
-    if response.status_code == 200:
-        posts = response.json()["posts"]
-
-        if not posts:
-            st.info("No posts yet! Be the first to share something.")
-            return
-
-        for post in posts:
-            st.markdown("---")
-
-            # header with user, date, and delete button (if owner)
-            col1, col2 = st.columns([4, 1])
-            with col1:
-                st.markdown(f"**{post['email']}** • {post['created_at'][:10]}")
-            with col2:
-                if post.get('is_owner', False):
-                    if st.button("🗑️", key=f"delete_{post['id']}", help="Delete post"):
-                        # delete
-                        response = requests.delete(f"http://localhost:8000/posts/{post['id']}", headers=get_headers())
-                        if response.status_code == 200:
-                            st.success("Post deleted!")
-                            st.rerun()
-                        else:
-                            st.error("Failed to delete post!")
-
-            caption = post.get('caption', '')
-            if post['file_type'] == 'image':
-                uniform_url = create_transformed_url(post['url'], "", caption)
-                st.image(uniform_url, width=300)
-            else:
-                # for videos: specify only height to maintain aspect ratio + caption overlay
-                uniform_video_url = create_transformed_url(post['url'], "w-400,h-200,cm-pad_resize,bg-blurred")
-                st.video(uniform_video_url, width=300)
-                st.caption(caption)
-
-            st.markdown("")
-    else:
+    if response.status_code != 200:
         st.error("Failed to load feed")
+        return
+
+    posts = response.json()["posts"]
+    if not posts:
+        st.info("No posts yet. Start sharing!")
+        return
+
+    for post in posts:
+        st.markdown("<div class='card'>", unsafe_allow_html=True)
+
+        col1, col2 = st.columns([4, 1])
+        with col1:
+            st.markdown(f"User : **{post['email']}**  \n"f"Posted on : *{post['created_at'][:10]}*")
+        with col2:
+            if post.get("is_owner"):
+                if st.button("🗑️ Delete", key=f"del_{post['id']}"):
+                    requests.delete(
+                        f"http://localhost:8000/posts/{post['id']}",
+                        headers=get_headers()
+                    )
+                    st.rerun()
+
+        if post["file_type"] == "image":
+            st.image(
+                create_transformed_url(post["url"], "", post.get("caption")),
+                use_container_width=False,
+                width=350
+            )
+        else:
+            st.video(
+                create_transformed_url(post["url"], "w-400,h-220,cm-pad_resize,bg-blurred"),
+                width=350
+            )
+            if post.get("caption"):
+                st.markdown(f"<p class='caption-text'>{post['caption']}</p>", unsafe_allow_html=True)
+
+        st.markdown("</div>", unsafe_allow_html=True)
 
 
 # main app stuff
 if st.session_state.user is None:
     login_page()
 else:
-    # sidebar
-    st.sidebar.title(f"👋 Hi {st.session_state.user['email']}!")
+    st.sidebar.markdown(f"## Hi👋{st.session_state.user['email']}!")
 
     if st.sidebar.button("Logout"):
         st.session_state.user = None
@@ -168,7 +224,7 @@ else:
         st.rerun()
 
     st.sidebar.markdown("---")
-    page = st.sidebar.radio("Navigate:", ["🏠 Feed", "📸 Upload"])
+    page = st.sidebar.radio("Navigation", ["🏠 Feed", "📸 Upload"])
 
     if page == "🏠 Feed":
         feed_page()
