@@ -142,9 +142,9 @@ IMAGEKIT_URL=https://ik.imagekit.io/your-id
 
 To get ImageKit credentials:
 
-i. Sign up at [imagekit.io](https://imagekit.io)
-ii. Create a new project
-iii. Copy your private key, public key, and URL endpoint from the dashboard
+- Sign up at [imagekit.io](https://imagekit.io)
+- Create a new project
+- Copy your private key, public key, and URL endpoint from the dashboard
 
 3. Run the FastAPI server:
 
