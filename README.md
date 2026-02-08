@@ -3,6 +3,9 @@
 This is a personal learning project created to explore and understand FastAPI, a modern, fast web framework for building APIs with Python. The project implements a simple instagram-like application as a practical exercise to learn various FastAPI concepts and features.
 
 > **Note:** This is not intended to be a production-ready social media application. The main goal is to learn FastAPI through hands-on implementation.
+![Fast Api Media Sharing PLatform](https://img.shields.io/badge/Python-3.12+-blue.svg)
+![FastAPI Version](https://img.shields.io/badge/FastAPI-0.122.0+-orange.svg)
+
 
 ## Learning Objectives
 
@@ -135,14 +138,14 @@ IMAGEKIT_URL=https://ik.imagekit.io/your-id
 
 To get ImageKit credentials:
 
-1. Sign up at [imagekit.io](https://imagekit.io)
-2. Create a new project
-3. Copy your private key, public key, and URL endpoint from the dashboard
+i. Sign up at [imagekit.io](https://imagekit.io)
+ii. Create a new project
+iii. Copy your private key, public key, and URL endpoint from the dashboard
 
 3. Run the FastAPI server:
 
 - Make sure uv is installed on your system. If not, follow the documentation at: https://docs.astral.sh/uv/
-- 
+  
 ```bash
 uv run main.py
 ```
