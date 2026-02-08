@@ -2,9 +2,13 @@
 
 This is a personal learning project created to explore and understand FastAPI, a modern, fast web framework for building APIs with Python. The project implements a simple instagram-like application as a practical exercise to learn various FastAPI concepts and features.
 
-> **Note:** This is not intended to be a production-ready social media application. The main goal is to learn FastAPI through hands-on implementation.
 ![Fast Api Media Sharing PLatform](https://img.shields.io/badge/Python-3.12+-blue.svg)
 ![FastAPI Version](https://img.shields.io/badge/FastAPI-0.122.0+-orange.svg)
+![Streamlit App](https://static.streamlit.io/badges/streamlit_badge_black_white.svg)
+
+> **Note:** This is not intended to be a production-ready social media application. The main goal is to learn FastAPI through hands-on implementation.
+
+
 
 
 ## Learning Objectives
